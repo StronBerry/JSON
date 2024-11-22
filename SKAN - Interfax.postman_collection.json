@@ -1,0 +1,384 @@
+{
+	"info": {
+		"_postman_id": "3a3258b2-3548-4bd2-9099-27c2ac370b89",
+		"name": "SKAN - Interfax",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "34191727"
+	},
+	"item": [
+		{
+			"name": "Auth Token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Access Token присутствует в ответе\", function () {",
+							"    const response = pm.response.json();",
+							"    pm.expect(response).to.have.property(\"accessToken\");",
+							"});",
+							"const response = pm.response.json();",
+							"",
+							"if (response.accessToken) {",
+							"    pm.collectionVariables.set(\"auth_token\", response.accessToken);",
+							"    console.log(\"Access token сохранен в переменную auth_token:\", response.accessToken);",
+							"} else {",
+							"    console.error(\"Access Token не найден в ответе\");",
+							"}",
+							"console.log(\"Сохраненный Access Token:\", pm.collectionVariables.get(\"auth_token\"));",
+							"",
+							"pm.test(\"Переменная auth_token сохранена\", function () {",
+							"    pm.expect(pm.collectionVariables.get(\"auth_token\")).to.exist;",
+							"});",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Status code is not 200\", function () {",
+							"    pm.response.to.not.have.status(200);",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"login\": \"{{test_login}}\",\n  \"password\": \"{{test_password}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/account/login",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"account",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Balance",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    const response = pm.response.json();",
+							"    pm.collectionVariables.set(\"current_balance\", response.balance);",
+							"    console.log(\"Current balance saved:\", response.balance);",
+							"}",
+							"pm.test(\"Значение 'Баланс' сохранено в переменную 'current_balance'\", function () {",
+							"    const response = pm.response.json();",
+							"    pm.expect(response).to.have.property(\"balance\");",
+							"",
+							"    pm.collectionVariables.set(\"current_balance\", response.balance);",
+							"",
+							"    console.log(\"Current balance saved:\", response.balance);",
+							"});",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{auth_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/account/balance",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"account",
+						"balance"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Publication Titles",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Сохранение тем публикаций и общее количсетво тем в переменные\", function () {",
+							"    const response = pm.response.json(); ",
+							"    pm.expect(response).to.have.property(\"subjects\");",
+							"    pm.expect(response.subjects).to.be.an(\"array\").that.is.not.empty;",
+							"",
+							"    const subject1 = response.subjects[0]?.name || \"N/A\";",
+							"    const subject2 = response.subjects[1]?.name || \"N/A\";",
+							"    const subject3 = response.subjects[2]?.name || \"N/A\";",
+							"    pm.collectionVariables.set(\"subjects_name1\", subject1);",
+							"    pm.collectionVariables.set(\"subjects_name2\", subject2);",
+							"    pm.collectionVariables.set(\"subjects_name3\", subject3);",
+							"",
+							"    pm.test(\"Subject 1 сохранено\", function () {",
+							"        pm.expect(pm.collectionVariables.get(\"subjects_name1\")).to.eql(subject1);",
+							"    });",
+							"    pm.test(\"Subject 2 сохранено\", function () {",
+							"        pm.expect(pm.collectionVariables.get(\"subjects_name2\")).to.eql(subject2);",
+							"    });",
+							"    pm.test(\"Subject 3 сохранено\", function () {",
+							"        pm.expect(pm.collectionVariables.get(\"subjects_name3\")).to.eql(subject3);",
+							"    });",
+							"",
+							"    const totalCount = response.totalCount;",
+							"    pm.collectionVariables.set(\"subjects_total\", totalCount);",
+							"",
+							"    pm.test(\"Total count сохранен\", function () {",
+							"        pm.expect(pm.collectionVariables.get(\"subjects_total\")).to.eql(totalCount);",
+							"    });",
+							"",
+							"    console.log(\"Subject 1:\", subject1);",
+							"    console.log(\"Subject 2:\", subject2);",
+							"    console.log(\"Subject 3:\", subject3);",
+							"    console.log(\"Total count:\", totalCount);",
+							"});",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/entities/subjects?index=0&pageSize=3",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"entities",
+						"subjects"
+					],
+					"query": [
+						{
+							"key": "index",
+							"value": "0"
+						},
+						{
+							"key": "pageSize",
+							"value": "3"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Scan Doc",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"const responseArray = pm.response.json();",
+							"",
+							"pm.test(\"Ответ содержит массив с элементами\", function () {",
+							"    pm.expect(responseArray).to.be.an(\"array\").that.is.not.empty;",
+							"});",
+							"",
+							"responseArray.forEach((document, index) => {",
+							"    pm.test(`У объекта '${index + 1}'  поле source.name`, function () {",
+							"        pm.expect(document.ok).to.have.nested.property(\"source.name\");",
+							"    });",
+							"});",
+							"",
+							"if (responseArray.length > 0) {",
+							"    pm.collectionVariables.set(\"news_agent_1\", responseArray[0].ok.source.name || \"undefined\");",
+							"    console.log(\"news_agent_1 saved as:\", responseArray[0].ok.source.name);",
+							"}",
+							"if (responseArray.length > 1) {",
+							"    pm.collectionVariables.set(\"news_agent_2\", responseArray[1]?.ok.source.name || \"undefined\");",
+							"    console.log(\"news_agent_2 saved as:\", responseArray[1].ok.source.name);",
+							"}",
+							"",
+							"pm.test(\"Переменная news_agent_1 сохранена\", function () {",
+							"    pm.expect(pm.collectionVariables.get(\"news_agent_1\")).to.exist;",
+							"});",
+							"",
+							"pm.test(\"Переменная news_agent_1 сохранена\", function () {",
+							"    pm.expect(pm.collectionVariables.get(\"news_agent_2\")).to.exist;",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{auth_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"ids\": [\n    \"1:0JPQqdGM0JNWCdCzf2Jt0LHQotGV0ZUh0ZbRlBXCt0Je0JHQruKAnDcUXkZQ0YvQscKnehLRnNC1KtGK0Ll9BWLigLo/HXXCrhw=\",\n    \"1:fmYoHEjQrRbQhz3RiUtm4oCh0JLRmtCLIyU10IzigqzRgGjQmCoR0JFg0YRhwrVzN9CxDUM50KcpdTbRiNCLwpjRkuKAphXRkVxh0JU50K5uWdC50L7RjX0C0KwQRsKp\"\n  ]\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/documents",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"documents"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{auth_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "https://gateway.scan-interfax.ru/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "test_login",
+			"value": "sf_student1",
+			"type": "string"
+		},
+		{
+			"key": "test_password",
+			"value": "4i2385j",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "current_balance",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "subjects_name1",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "subjects_name2",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "subjects_name3",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "subjects_total",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "news_agent_1",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "news_agent_2",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
